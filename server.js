@@ -97,6 +97,98 @@ db.serialize(() => {
     FOREIGN KEY(to_user_id) REFERENCES users(id),
     FOREIGN KEY(project_id) REFERENCES projects(id)
   )`);
+
+  // Projects extended table
+  db.run(`CREATE TABLE IF NOT EXISTS project_details (
+    id TEXT PRIMARY KEY,
+    project_id TEXT,
+    experience_level TEXT,
+    skills_required TEXT,
+    attachments TEXT,
+    project_scope TEXT,
+    payment_method TEXT,
+    contract_type TEXT,
+    FOREIGN KEY(project_id) REFERENCES projects(id)
+  )`);
+
+  // Vendor portfolios
+  db.run(`CREATE TABLE IF NOT EXISTS vendor_portfolio (
+    id TEXT PRIMARY KEY,
+    vendor_id TEXT,
+    title TEXT,
+    description TEXT,
+    image_url TEXT,
+    project_url TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(vendor_id) REFERENCES users(id)
+  )`);
+
+  // Vendor certifications
+  db.run(`CREATE TABLE IF NOT EXISTS vendor_certifications (
+    id TEXT PRIMARY KEY,
+    vendor_id TEXT,
+    certification_name TEXT,
+    issuer TEXT,
+    issue_date TEXT,
+    expiry_date TEXT,
+    credential_url TEXT,
+    FOREIGN KEY(vendor_id) REFERENCES users(id)
+  )`);
+
+  // Vendor testimonials
+  db.run(`CREATE TABLE IF NOT EXISTS testimonials (
+    id TEXT PRIMARY KEY,
+    vendor_id TEXT,
+    client_name TEXT,
+    company TEXT,
+    testimonial_text TEXT,
+    rating REAL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(vendor_id) REFERENCES users(id)
+  )`);
+
+  // Project milestones
+  db.run(`CREATE TABLE IF NOT EXISTS milestones (
+    id TEXT PRIMARY KEY,
+    project_id TEXT,
+    title TEXT,
+    description TEXT,
+    due_date TEXT,
+    status TEXT,
+    payment_percentage REAL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(project_id) REFERENCES projects(id)
+  )`);
+
+  // Contracts
+  db.run(`CREATE TABLE IF NOT EXISTS contracts (
+    id TEXT PRIMARY KEY,
+    project_id TEXT,
+    vendor_id TEXT,
+    contractor_id TEXT,
+    contract_text TEXT,
+    status TEXT,
+    signed_date TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(project_id) REFERENCES projects(id),
+    FOREIGN KEY(vendor_id) REFERENCES users(id),
+    FOREIGN KEY(contractor_id) REFERENCES users(id)
+  )`);
+
+  // Payments
+  db.run(`CREATE TABLE IF NOT EXISTS payments (
+    id TEXT PRIMARY KEY,
+    project_id TEXT,
+    vendor_id TEXT,
+    amount REAL,
+    status TEXT,
+    payment_method TEXT,
+    milestone_id TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(project_id) REFERENCES projects(id),
+    FOREIGN KEY(vendor_id) REFERENCES users(id),
+    FOREIGN KEY(milestone_id) REFERENCES milestones(id)
+  )`);
 });
 
 // Auth Routes
@@ -314,6 +406,234 @@ app.get('/api/reviews/:user_id', (req, res) => {
   );
 });
 
+// ===== ENHANCED PROJECT DETAILS =====
+app.post('/api/project-details', (req, res) => {
+  const { project_id, experience_level, skills_required, project_scope, payment_method, contract_type } = req.body;
+  const id = uuidv4();
+  
+  db.run(
+    'INSERT INTO project_details (id, project_id, experience_level, skills_required, project_scope, payment_method, contract_type) VALUES (?, ?, ?, ?, ?, ?, ?) ',
+    [id, project_id, experience_level, skills_required, project_scope, payment_method, contract_type],
+    (err) => {
+      if (err) return res.status(400).json({ error: err.message });
+      res.json({ id });
+    }
+  );
+});
+
+app.get('/api/project-details/:project_id', (req, res) => {
+  db.get(
+    'SELECT * FROM project_details WHERE project_id = ?',
+    [req.params.project_id],
+    (err, row) => {
+      if (err) return res.status(400).json({ error: err.message });
+      res.json(row || {});
+    }
+  );
+});
+
+// ===== VENDOR PORTFOLIO =====
+app.post('/api/vendor/portfolio', (req, res) => {
+  const { vendor_id, title, description, image_url, project_url } = req.body;
+  const id = uuidv4();
+  
+  db.run(
+    'INSERT INTO vendor_portfolio (id, vendor_id, title, description, image_url, project_url) VALUES (?, ?, ?, ?, ?, ?)',
+    [id, vendor_id, title, description, image_url, project_url],
+    (err) => {
+      if (err) return res.status(400).json({ error: err.message });
+      res.json({ id });
+    }
+  );
+});
+
+app.get('/api/vendor/portfolio/:vendor_id', (req, res) => {
+  db.all(
+    'SELECT * FROM vendor_portfolio WHERE vendor_id = ? ORDER BY created_at DESC',
+    [req.params.vendor_id],
+    (err, rows) => {
+      if (err) return res.status(400).json({ error: err.message });
+      res.json(rows || []);
+    }
+  );
+});
+
+// ===== VENDOR CERTIFICATIONS =====
+app.post('/api/vendor/certifications', (req, res) => {
+  const { vendor_id, certification_name, issuer, issue_date, expiry_date, credential_url } = req.body;
+  const id = uuidv4();
+  
+  db.run(
+    'INSERT INTO vendor_certifications (id, vendor_id, certification_name, issuer, issue_date, expiry_date, credential_url) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    [id, vendor_id, certification_name, issuer, issue_date, expiry_date, credential_url],
+    (err) => {
+      if (err) return res.status(400).json({ error: err.message });
+      res.json({ id });
+    }
+  );
+});
+
+app.get('/api/vendor/certifications/:vendor_id', (req, res) => {
+  db.all(
+    'SELECT * FROM vendor_certifications WHERE vendor_id = ?',
+    [req.params.vendor_id],
+    (err, rows) => {
+      if (err) return res.status(400).json({ error: err.message });
+      res.json(rows || []);
+    }
+  );
+});
+
+// ===== PROJECT MILESTONES =====
+app.post('/api/milestones', (req, res) => {
+  const { project_id, title, description, due_date, payment_percentage } = req.body;
+  const id = uuidv4();
+  
+  db.run(
+    'INSERT INTO milestones (id, project_id, title, description, due_date, status, payment_percentage) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    [id, project_id, title, description, due_date, 'pending', payment_percentage],
+    (err) => {
+      if (err) return res.status(400).json({ error: err.message });
+      res.json({ id });
+    }
+  );
+});
+
+app.get('/api/milestones/:project_id', (req, res) => {
+  db.all(
+    'SELECT * FROM milestones WHERE project_id = ? ORDER BY due_date ASC',
+    [req.params.project_id],
+    (err, rows) => {
+      if (err) return res.status(400).json({ error: err.message });
+      res.json(rows || []);
+    }
+  );
+});
+
+app.put('/api/milestones/:id', (req, res) => {
+  const { status } = req.body;
+  db.run(
+    'UPDATE milestones SET status = ? WHERE id = ?',
+    [status, req.params.id],
+    (err) => {
+      if (err) return res.status(400).json({ error: err.message });
+      res.json({ success: true });
+    }
+  );
+});
+
+// ===== CONTRACTS =====
+app.post('/api/contracts', (req, res) => {
+  const { project_id, vendor_id, contractor_id, contract_text } = req.body;
+  const id = uuidv4();
+  
+  db.run(
+    'INSERT INTO contracts (id, project_id, vendor_id, contractor_id, contract_text, status) VALUES (?, ?, ?, ?, ?, ?)',
+    [id, project_id, vendor_id, contractor_id, contract_text, 'pending'],
+    (err) => {
+      if (err) return res.status(400).json({ error: err.message });
+      res.json({ id });
+    }
+  );
+});
+
+app.get('/api/contracts/:project_id', (req, res) => {
+  db.all(
+    'SELECT * FROM contracts WHERE project_id = ?',
+    [req.params.project_id],
+    (err, rows) => {
+      if (err) return res.status(400).json({ error: err.message });
+      res.json(rows || []);
+    }
+  );
+});
+
+app.put('/api/contracts/:id', (req, res) => {
+  const { status } = req.body;
+  db.run(
+    'UPDATE contracts SET status = ?, signed_date = ? WHERE id = ?',
+    [status, status === 'signed' ? new Date().toISOString() : null, req.params.id],
+    (err) => {
+      if (err) return res.status(400).json({ error: err.message });
+      res.json({ success: true });
+    }
+  );
+});
+
+// ===== PAYMENTS =====
+app.post('/api/payments', (req, res) => {
+  const { project_id, vendor_id, amount, payment_method, milestone_id } = req.body;
+  const id = uuidv4();
+  
+  db.run(
+    'INSERT INTO payments (id, project_id, vendor_id, amount, status, payment_method, milestone_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    [id, project_id, vendor_id, amount, 'pending', payment_method, milestone_id],
+    (err) => {
+      if (err) return res.status(400).json({ error: err.message });
+      res.json({ id });
+    }
+  );
+});
+
+app.get('/api/payments/:project_id', (req, res) => {
+  db.all(
+    'SELECT * FROM payments WHERE project_id = ? ORDER BY created_at DESC',
+    [req.params.project_id],
+    (err, rows) => {
+      if (err) return res.status(400).json({ error: err.message });
+      res.json(rows || []);
+    }
+  );
+});
+
+app.put('/api/payments/:id', (req, res) => {
+  const { status } = req.body;
+  db.run(
+    'UPDATE payments SET status = ? WHERE id = ?',
+    [status, req.params.id],
+    (err) => {
+      if (err) return res.status(400).json({ error: err.message });
+      res.json({ success: true });
+    }
+  );
+});
+
+// ===== ADVANCED SEARCH =====
+app.get('/api/projects/search', (req, res) => {
+  const { category, location, budget_min, budget_max, experience_level, skills } = req.query;
+  
+  let query = 'SELECT p.*, pd.experience_level, pd.skills_required FROM projects p LEFT JOIN project_details pd ON p.id = pd.project_id WHERE p.status = "open"';
+  const params = [];
+  
+  if (category) {
+    query += ' AND p.category LIKE ?';
+    params.push(`%${category}%`);
+  }
+  if (location) {
+    query += ' AND p.location LIKE ?';
+    params.push(`%${location}%`);
+  }
+  if (budget_min) {
+    query += ' AND CAST(p.budget AS REAL) >= ?';
+    params.push(budget_min);
+  }
+  if (budget_max) {
+    query += ' AND CAST(p.budget AS REAL) <= ?';
+    params.push(budget_max);
+  }
+  if (experience_level) {
+    query += ' AND pd.experience_level LIKE ?';
+    params.push(`%${experience_level}%`);
+  }
+  
+  query += ' ORDER BY p.created_at DESC';
+  
+  db.all(query, params, (err, rows) => {
+    if (err) return res.status(400).json({ error: err.message });
+    res.json(rows || []);
+  });
+});
+
 // Search vendors
 app.get('/api/vendors/search', (req, res) => {
   const { category, location } = req.query;
@@ -344,96 +664,3 @@ app.get('/api/vendors/search', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
-// Add after the existing reviews table:
-
-// Projects extended table
-db.run(`CREATE TABLE IF NOT EXISTS project_details (
-  id TEXT PRIMARY KEY,
-  project_id TEXT,
-  experience_level TEXT,
-  skills_required TEXT,
-  attachments TEXT,
-  project_scope TEXT,
-  payment_method TEXT,
-  contract_type TEXT,
-  FOREIGN KEY(project_id) REFERENCES projects(id)
-)`);
-
-// Vendor portfolios
-db.run(`CREATE TABLE IF NOT EXISTS vendor_portfolio (
-  id TEXT PRIMARY KEY,
-  vendor_id TEXT,
-  title TEXT,
-  description TEXT,
-  image_url TEXT,
-  project_url TEXT,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY(vendor_id) REFERENCES users(id)
-)`);
-
-// Vendor certifications
-db.run(`CREATE TABLE IF NOT EXISTS vendor_certifications (
-  id TEXT PRIMARY KEY,
-  vendor_id TEXT,
-  certification_name TEXT,
-  issuer TEXT,
-  issue_date TEXT,
-  expiry_date TEXT,
-  credential_url TEXT,
-  FOREIGN KEY(vendor_id) REFERENCES users(id)
-)`);
-
-// Vendor testimonials
-db.run(`CREATE TABLE IF NOT EXISTS testimonials (
-  id TEXT PRIMARY KEY,
-  vendor_id TEXT,
-  client_name TEXT,
-  company TEXT,
-  testimonial_text TEXT,
-  rating REAL,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY(vendor_id) REFERENCES users(id)
-)`);
-
-// Project milestones
-db.run(`CREATE TABLE IF NOT EXISTS milestones (
-  id TEXT PRIMARY KEY,
-  project_id TEXT,
-  title TEXT,
-  description TEXT,
-  due_date TEXT,
-  status TEXT,
-  payment_percentage REAL,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY(project_id) REFERENCES projects(id)
-)`);
-
-// Contracts
-db.run(`CREATE TABLE IF NOT EXISTS contracts (
-  id TEXT PRIMARY KEY,
-  project_id TEXT,
-  vendor_id TEXT,
-  contractor_id TEXT,
-  contract_text TEXT,
-  status TEXT,
-  signed_date TEXT,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY(project_id) REFERENCES projects(id),
-  FOREIGN KEY(vendor_id) REFERENCES users(id),
-  FOREIGN KEY(contractor_id) REFERENCES users(id)
-)`);
-
-// Payments
-db.run(`CREATE TABLE IF NOT EXISTS payments (
-  id TEXT PRIMARY KEY,
-  project_id TEXT,
-  vendor_id TEXT,
-  amount REAL,
-  status TEXT,
-  payment_method TEXT,
-  milestone_id TEXT,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY(project_id) REFERENCES projects(id),
-  FOREIGN KEY(vendor_id) REFERENCES users(id),
-  FOREIGN KEY(milestone_id) REFERENCES milestones(id)
-)`);
