@@ -3,20 +3,22 @@ import cors from 'cors';
 import sqlite3 from 'sqlite3';
 import { v4 as uuidv4 } from 'uuid';
 import bodyParser from 'body-parser';
+import bcrypt from 'bcrypt';
 
 const app = express();
 const PORT = 5000;
+const SALT_ROUNDS = 10;
 
 app.use(cors());
 app.use(bodyParser.json());
 
-// Initialize SQLite database
-const db = new sqlite3.Database(':memory:');
+// Initialize SQLite database (file-based for persistence)
+const db = new sqlite3.Database('./data.db');
 
 // Create tables
 db.serialize(() => {
   // Users table
-  db.run(`CREATE TABLE users (
+  db.run(`CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
     email TEXT UNIQUE,
     password TEXT,
@@ -28,7 +30,7 @@ db.serialize(() => {
   )`);
 
   // Vendor profiles
-  db.run(`CREATE TABLE vendor_profiles (
+  db.run(`CREATE TABLE IF NOT EXISTS vendor_profiles (
     id TEXT PRIMARY KEY,
     user_id TEXT,
     services TEXT,
@@ -43,7 +45,7 @@ db.serialize(() => {
   )`);
 
   // Projects
-  db.run(`CREATE TABLE projects (
+  db.run(`CREATE TABLE IF NOT EXISTS projects (
     id TEXT PRIMARY KEY,
     contractor_id TEXT,
     title TEXT,
@@ -59,7 +61,7 @@ db.serialize(() => {
   )`);
 
   // Quotations
-  db.run(`CREATE TABLE quotations (
+  db.run(`CREATE TABLE IF NOT EXISTS quotations (
     id TEXT PRIMARY KEY,
     project_id TEXT,
     vendor_id TEXT,
@@ -72,7 +74,7 @@ db.serialize(() => {
   )`);
 
   // Messages
-  db.run(`CREATE TABLE messages (
+  db.run(`CREATE TABLE IF NOT EXISTS messages (
     id TEXT PRIMARY KEY,
     sender_id TEXT,
     recipient_id TEXT,
@@ -85,7 +87,7 @@ db.serialize(() => {
   )`);
 
   // Reviews
-  db.run(`CREATE TABLE reviews (
+  db.run(`CREATE TABLE IF NOT EXISTS reviews (
     id TEXT PRIMARY KEY,
     from_user_id TEXT,
     to_user_id TEXT,
@@ -196,29 +198,42 @@ app.post('/api/auth/register', (req, res) => {
   const { email, password, name, type, location, phone } = req.body;
   const id = uuidv4();
 
-  db.run(
-    'INSERT INTO users (id, email, password, name, type, location, phone) VALUES (?, ?, ?, ?, ?, ?, ?)',
-    [id, email, password, name, type, location, phone],
-    (err) => {
-      if (err) {
-        return res.status(400).json({ error: 'Email already exists' });
+  if (!email || !password) return res.status(400).json({ error: 'Email and password are required' });
+
+  bcrypt.hash(password, SALT_ROUNDS, (hashErr, hash) => {
+    if (hashErr) return res.status(500).json({ error: 'Error hashing password' });
+
+    db.run(
+      'INSERT INTO users (id, email, password, name, type, location, phone) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [id, email, hash, name, type, location, phone],
+      (err) => {
+        if (err) {
+          return res.status(400).json({ error: 'Email already exists' });
+        }
+        res.json({ id, email, name, type });
       }
-      res.json({ id, email, name, type });
-    }
-  );
+    );
+  });
 });
 
 app.post('/api/auth/login', (req, res) => {
   const { email, password } = req.body;
 
+  if (!email || !password) return res.status(400).json({ error: 'Email and password are required' });
+
   db.get(
-    'SELECT * FROM users WHERE email = ? AND password = ?',
-    [email, password],
+    'SELECT * FROM users WHERE email = ?',
+    [email],
     (err, row) => {
       if (err || !row) {
         return res.status(401).json({ error: 'Invalid credentials' });
       }
-      res.json(row);
+
+      bcrypt.compare(password, row.password, (cmpErr, match) => {
+        if (cmpErr || !match) return res.status(401).json({ error: 'Invalid credentials' });
+        const { password: pw, ...safeUser } = row;
+        res.json(safeUser);
+      });
     }
   );
 });
@@ -383,7 +398,7 @@ app.post('/api/reviews', (req, res) => {
         return res.status(400).json({ error: err.message });
       }
       // Update vendor rating
-      db.run('SELECT AVG(rating) as avg_rating FROM reviews WHERE to_user_id = ?', [to_user_id], (err, result) => {
+      db.get('SELECT AVG(rating) as avg_rating FROM reviews WHERE to_user_id = ?', [to_user_id], (err, result) => {
         if (!err && result) {
           db.run('UPDATE vendor_profiles SET rating = ? WHERE user_id = ?', [result.avg_rating, to_user_id], () => {});
         }
