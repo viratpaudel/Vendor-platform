@@ -1,0 +1,25 @@
+{
+  "name": "vendor-platform-mvp",
+  "version": "1.0.0",
+  "description": "Vendor & Contractor Platform MVP",
+  "type": "module",
+  "scripts": {
+    "backend": "node server.js",
+    "frontend": "vite",
+    "build": "vite build",
+    "start": "npm run backend"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "sqlite3": "^5.1.6",
+    "uuid": "^9.0.0",
+    "body-parser": "^1.20.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.0.0",
+    "vite": "^4.3.9"
+  }
+}
