@@ -1,19 +1,20 @@
-import express from 'express';
-import cors from 'cors';
-import sqlite3 from 'sqlite3';
-import { v4 as uuidv4 } from 'uuid';
-import bodyParser from 'body-parser';
-import bcrypt from 'bcrypt';
+import express from "express";
+import cors from "cors";
+import sqlite3 from "sqlite3";
+import { randomUUID } from "crypto";
+import bodyParser from "body-parser";
+import bcrypt from "bcrypt";
 
 const app = express();
 const PORT = 5000;
 const SALT_ROUNDS = 10;
+const makeId = () => randomUUID();
 
 app.use(cors());
 app.use(bodyParser.json());
 
 // Initialize SQLite database (file-based for persistence)
-const db = new sqlite3.Database('./data.db');
+const db = new sqlite3.Database("./data.db");
 
 // Create tables
 db.serialize(() => {
@@ -194,455 +195,553 @@ db.serialize(() => {
 });
 
 // Auth Routes
-app.post('/api/auth/register', (req, res) => {
+app.post("/api/auth/register", (req, res) => {
   const { email, password, name, type, location, phone } = req.body;
-  const id = uuidv4();
+  const id = makeId();
 
-  if (!email || !password) return res.status(400).json({ error: 'Email and password are required' });
+  if (!email || !password)
+    return res.status(400).json({ error: "Email and password are required" });
 
   bcrypt.hash(password, SALT_ROUNDS, (hashErr, hash) => {
-    if (hashErr) return res.status(500).json({ error: 'Error hashing password' });
+    if (hashErr)
+      return res.status(500).json({ error: "Error hashing password" });
 
     db.run(
-      'INSERT INTO users (id, email, password, name, type, location, phone) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      "INSERT INTO users (id, email, password, name, type, location, phone) VALUES (?, ?, ?, ?, ?, ?, ?)",
       [id, email, hash, name, type, location, phone],
       (err) => {
         if (err) {
-          return res.status(400).json({ error: 'Email already exists' });
+          return res.status(400).json({ error: "Email already exists" });
         }
         res.json({ id, email, name, type });
-      }
+      },
     );
   });
 });
 
-app.post('/api/auth/login', (req, res) => {
+app.post("/api/auth/login", (req, res) => {
   const { email, password } = req.body;
 
-  if (!email || !password) return res.status(400).json({ error: 'Email and password are required' });
+  if (!email || !password)
+    return res.status(400).json({ error: "Email and password are required" });
 
-  db.get(
-    'SELECT * FROM users WHERE email = ?',
-    [email],
-    (err, row) => {
-      if (err || !row) {
-        return res.status(401).json({ error: 'Invalid credentials' });
-      }
-
-      bcrypt.compare(password, row.password, (cmpErr, match) => {
-        if (cmpErr || !match) return res.status(401).json({ error: 'Invalid credentials' });
-        const { password: pw, ...safeUser } = row;
-        res.json(safeUser);
-      });
+  db.get("SELECT * FROM users WHERE email = ?", [email], (err, row) => {
+    if (err || !row) {
+      return res.status(401).json({ error: "Invalid credentials" });
     }
-  );
+
+    bcrypt.compare(password, row.password, (cmpErr, match) => {
+      if (cmpErr || !match)
+        return res.status(401).json({ error: "Invalid credentials" });
+      const { password: pw, ...safeUser } = row;
+      res.json(safeUser);
+    });
+  });
 });
 
 // Vendor Profile Routes
-app.post('/api/vendor/profile', (req, res) => {
-  const { user_id, services, experience, portfolio, pricing, availability } = req.body;
-  const id = uuidv4();
+app.post("/api/vendor/profile", (req, res) => {
+  const { user_id, services, experience, portfolio, pricing, availability } =
+    req.body;
+  const id = makeId();
 
   db.run(
-    'INSERT INTO vendor_profiles (id, user_id, services, experience, portfolio, pricing, availability, verified) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-    [id, user_id, services, experience, portfolio, pricing, availability, false],
+    "INSERT INTO vendor_profiles (id, user_id, services, experience, portfolio, pricing, availability, verified) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+    [
+      id,
+      user_id,
+      services,
+      experience,
+      portfolio,
+      pricing,
+      availability,
+      false,
+    ],
     (err) => {
       if (err) {
         return res.status(400).json({ error: err.message });
       }
       res.json({ id, user_id });
-    }
+    },
   );
 });
 
-app.get('/api/vendor/profile/:user_id', (req, res) => {
+app.get("/api/vendor/profile/:user_id", (req, res) => {
   db.get(
-    'SELECT * FROM vendor_profiles WHERE user_id = ?',
+    "SELECT * FROM vendor_profiles WHERE user_id = ?",
     [req.params.user_id],
     (err, row) => {
       if (err) {
         return res.status(400).json({ error: err.message });
       }
       res.json(row || {});
-    }
+    },
   );
 });
 
 // Project Routes
-app.post('/api/projects', (req, res) => {
-  const { contractor_id, title, description, category, budget, location, deadline, required_skills } = req.body;
-  const id = uuidv4();
+app.post("/api/projects", (req, res) => {
+  const {
+    contractor_id,
+    title,
+    description,
+    category,
+    budget,
+    location,
+    deadline,
+    required_skills,
+  } = req.body;
+  const id = makeId();
 
   db.run(
-    'INSERT INTO projects (id, contractor_id, title, description, category, budget, location, deadline, required_skills, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-    [id, contractor_id, title, description, category, budget, location, deadline, required_skills, 'open'],
+    "INSERT INTO projects (id, contractor_id, title, description, category, budget, location, deadline, required_skills, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+    [
+      id,
+      contractor_id,
+      title,
+      description,
+      category,
+      budget,
+      location,
+      deadline,
+      required_skills,
+      "open",
+    ],
     (err) => {
       if (err) {
         return res.status(400).json({ error: err.message });
       }
       res.json({ id });
-    }
+    },
   );
 });
 
-app.get('/api/projects', (req, res) => {
+app.get("/api/projects", (req, res) => {
   db.all(
-    'SELECT p.*, u.name as contractor_name FROM projects p JOIN users u ON p.contractor_id = u.id ORDER BY p.created_at DESC',
+    "SELECT p.*, u.name as contractor_name FROM projects p JOIN users u ON p.contractor_id = u.id ORDER BY p.created_at DESC",
     (err, rows) => {
       if (err) {
         return res.status(400).json({ error: err.message });
       }
       res.json(rows || []);
-    }
+    },
   );
 });
 
-app.get('/api/projects/:id', (req, res) => {
+app.get("/api/projects/:id", (req, res) => {
   db.get(
-    'SELECT p.*, u.name as contractor_name FROM projects p JOIN users u ON p.contractor_id = u.id WHERE p.id = ?',
+    "SELECT p.*, u.name as contractor_name FROM projects p JOIN users u ON p.contractor_id = u.id WHERE p.id = ?",
     [req.params.id],
     (err, row) => {
       if (err) {
         return res.status(400).json({ error: err.message });
       }
       res.json(row || {});
-    }
+    },
   );
 });
 
 // Quotation Routes
-app.post('/api/quotations', (req, res) => {
+app.post("/api/quotations", (req, res) => {
   const { project_id, vendor_id, amount, description } = req.body;
-  const id = uuidv4();
+  const id = makeId();
 
   db.run(
-    'INSERT INTO quotations (id, project_id, vendor_id, amount, description, status) VALUES (?, ?, ?, ?, ?, ?)',
-    [id, project_id, vendor_id, amount, description, 'pending'],
+    "INSERT INTO quotations (id, project_id, vendor_id, amount, description, status) VALUES (?, ?, ?, ?, ?, ?)",
+    [id, project_id, vendor_id, amount, description, "pending"],
     (err) => {
       if (err) {
         return res.status(400).json({ error: err.message });
       }
       res.json({ id });
-    }
+    },
   );
 });
 
-app.get('/api/quotations/:project_id', (req, res) => {
+app.get("/api/quotations/:project_id", (req, res) => {
   db.all(
-    'SELECT q.*, u.name as vendor_name, vp.rating FROM quotations q JOIN users u ON q.vendor_id = u.id LEFT JOIN vendor_profiles vp ON u.id = vp.user_id WHERE q.project_id = ?',
+    "SELECT q.*, u.name as vendor_name, vp.rating FROM quotations q JOIN users u ON q.vendor_id = u.id LEFT JOIN vendor_profiles vp ON u.id = vp.user_id WHERE q.project_id = ?",
     [req.params.project_id],
     (err, rows) => {
       if (err) {
         return res.status(400).json({ error: err.message });
       }
       res.json(rows || []);
-    }
+    },
   );
 });
 
-app.put('/api/quotations/:id', (req, res) => {
+app.put("/api/quotations/:id", (req, res) => {
   const { status } = req.body;
 
   db.run(
-    'UPDATE quotations SET status = ? WHERE id = ?',
+    "UPDATE quotations SET status = ? WHERE id = ?",
     [status, req.params.id],
     (err) => {
       if (err) {
         return res.status(400).json({ error: err.message });
       }
       res.json({ success: true });
-    }
+    },
   );
 });
 
 // Message Routes
-app.post('/api/messages', (req, res) => {
+app.post("/api/messages", (req, res) => {
   const { sender_id, recipient_id, project_id, message } = req.body;
-  const id = uuidv4();
+  const id = makeId();
 
   db.run(
-    'INSERT INTO messages (id, sender_id, recipient_id, project_id, message) VALUES (?, ?, ?, ?, ?)',
+    "INSERT INTO messages (id, sender_id, recipient_id, project_id, message) VALUES (?, ?, ?, ?, ?)",
     [id, sender_id, recipient_id, project_id, message],
     (err) => {
       if (err) {
         return res.status(400).json({ error: err.message });
       }
       res.json({ id });
-    }
+    },
   );
 });
 
-app.get('/api/messages/:project_id/:user_id', (req, res) => {
+app.get("/api/messages/:project_id/:user_id", (req, res) => {
   db.all(
-    'SELECT * FROM messages WHERE project_id = ? AND (sender_id = ? OR recipient_id = ?) ORDER BY created_at ASC',
+    "SELECT * FROM messages WHERE project_id = ? AND (sender_id = ? OR recipient_id = ?) ORDER BY created_at ASC",
     [req.params.project_id, req.params.user_id, req.params.user_id],
     (err, rows) => {
       if (err) {
         return res.status(400).json({ error: err.message });
       }
       res.json(rows || []);
-    }
+    },
   );
 });
 
 // Review Routes
-app.post('/api/reviews', (req, res) => {
+app.post("/api/reviews", (req, res) => {
   const { from_user_id, to_user_id, project_id, rating, comment } = req.body;
-  const id = uuidv4();
+  const id = makeId();
 
   db.run(
-    'INSERT INTO reviews (id, from_user_id, to_user_id, project_id, rating, comment) VALUES (?, ?, ?, ?, ?, ?)',
+    "INSERT INTO reviews (id, from_user_id, to_user_id, project_id, rating, comment) VALUES (?, ?, ?, ?, ?, ?)",
     [id, from_user_id, to_user_id, project_id, rating, comment],
     (err) => {
       if (err) {
         return res.status(400).json({ error: err.message });
       }
       // Update vendor rating
-      db.get('SELECT AVG(rating) as avg_rating FROM reviews WHERE to_user_id = ?', [to_user_id], (err, result) => {
-        if (!err && result) {
-          db.run('UPDATE vendor_profiles SET rating = ? WHERE user_id = ?', [result.avg_rating, to_user_id], () => {});
-        }
-      });
+      db.get(
+        "SELECT AVG(rating) as avg_rating FROM reviews WHERE to_user_id = ?",
+        [to_user_id],
+        (err, result) => {
+          if (!err && result) {
+            db.run(
+              "UPDATE vendor_profiles SET rating = ? WHERE user_id = ?",
+              [result.avg_rating, to_user_id],
+              () => {},
+            );
+          }
+        },
+      );
       res.json({ id });
-    }
+    },
   );
 });
 
-app.get('/api/reviews/:user_id', (req, res) => {
+app.get("/api/reviews/:user_id", (req, res) => {
   db.all(
-    'SELECT r.*, u.name as from_user_name FROM reviews r JOIN users u ON r.from_user_id = u.id WHERE r.to_user_id = ? ORDER BY r.created_at DESC',
+    "SELECT r.*, u.name as from_user_name FROM reviews r JOIN users u ON r.from_user_id = u.id WHERE r.to_user_id = ? ORDER BY r.created_at DESC",
     [req.params.user_id],
     (err, rows) => {
       if (err) {
         return res.status(400).json({ error: err.message });
       }
       res.json(rows || []);
-    }
+    },
   );
 });
 
 // ===== ENHANCED PROJECT DETAILS =====
-app.post('/api/project-details', (req, res) => {
-  const { project_id, experience_level, skills_required, project_scope, payment_method, contract_type } = req.body;
-  const id = uuidv4();
-  
+app.post("/api/project-details", (req, res) => {
+  const {
+    project_id,
+    experience_level,
+    skills_required,
+    project_scope,
+    payment_method,
+    contract_type,
+  } = req.body;
+  const id = makeId();
+
   db.run(
-    'INSERT INTO project_details (id, project_id, experience_level, skills_required, project_scope, payment_method, contract_type) VALUES (?, ?, ?, ?, ?, ?, ?) ',
-    [id, project_id, experience_level, skills_required, project_scope, payment_method, contract_type],
+    "INSERT INTO project_details (id, project_id, experience_level, skills_required, project_scope, payment_method, contract_type) VALUES (?, ?, ?, ?, ?, ?, ?) ",
+    [
+      id,
+      project_id,
+      experience_level,
+      skills_required,
+      project_scope,
+      payment_method,
+      contract_type,
+    ],
     (err) => {
       if (err) return res.status(400).json({ error: err.message });
       res.json({ id });
-    }
+    },
   );
 });
 
-app.get('/api/project-details/:project_id', (req, res) => {
+app.get("/api/project-details/:project_id", (req, res) => {
   db.get(
-    'SELECT * FROM project_details WHERE project_id = ?',
+    "SELECT * FROM project_details WHERE project_id = ?",
     [req.params.project_id],
     (err, row) => {
       if (err) return res.status(400).json({ error: err.message });
       res.json(row || {});
-    }
+    },
   );
 });
 
 // ===== VENDOR PORTFOLIO =====
-app.post('/api/vendor/portfolio', (req, res) => {
+app.post("/api/vendor/portfolio", (req, res) => {
   const { vendor_id, title, description, image_url, project_url } = req.body;
-  const id = uuidv4();
-  
+  const id = makeId();
+
   db.run(
-    'INSERT INTO vendor_portfolio (id, vendor_id, title, description, image_url, project_url) VALUES (?, ?, ?, ?, ?, ?)',
+    "INSERT INTO vendor_portfolio (id, vendor_id, title, description, image_url, project_url) VALUES (?, ?, ?, ?, ?, ?)",
     [id, vendor_id, title, description, image_url, project_url],
     (err) => {
       if (err) return res.status(400).json({ error: err.message });
       res.json({ id });
-    }
+    },
   );
 });
 
-app.get('/api/vendor/portfolio/:vendor_id', (req, res) => {
+app.get("/api/vendor/portfolio/:vendor_id", (req, res) => {
   db.all(
-    'SELECT * FROM vendor_portfolio WHERE vendor_id = ? ORDER BY created_at DESC',
+    "SELECT * FROM vendor_portfolio WHERE vendor_id = ? ORDER BY created_at DESC",
     [req.params.vendor_id],
     (err, rows) => {
       if (err) return res.status(400).json({ error: err.message });
       res.json(rows || []);
-    }
+    },
   );
 });
 
 // ===== VENDOR CERTIFICATIONS =====
-app.post('/api/vendor/certifications', (req, res) => {
-  const { vendor_id, certification_name, issuer, issue_date, expiry_date, credential_url } = req.body;
-  const id = uuidv4();
-  
+app.post("/api/vendor/certifications", (req, res) => {
+  const {
+    vendor_id,
+    certification_name,
+    issuer,
+    issue_date,
+    expiry_date,
+    credential_url,
+  } = req.body;
+  const id = makeId();
+
   db.run(
-    'INSERT INTO vendor_certifications (id, vendor_id, certification_name, issuer, issue_date, expiry_date, credential_url) VALUES (?, ?, ?, ?, ?, ?, ?)',
-    [id, vendor_id, certification_name, issuer, issue_date, expiry_date, credential_url],
+    "INSERT INTO vendor_certifications (id, vendor_id, certification_name, issuer, issue_date, expiry_date, credential_url) VALUES (?, ?, ?, ?, ?, ?, ?)",
+    [
+      id,
+      vendor_id,
+      certification_name,
+      issuer,
+      issue_date,
+      expiry_date,
+      credential_url,
+    ],
     (err) => {
       if (err) return res.status(400).json({ error: err.message });
       res.json({ id });
-    }
+    },
   );
 });
 
-app.get('/api/vendor/certifications/:vendor_id', (req, res) => {
+app.get("/api/vendor/certifications/:vendor_id", (req, res) => {
   db.all(
-    'SELECT * FROM vendor_certifications WHERE vendor_id = ?',
+    "SELECT * FROM vendor_certifications WHERE vendor_id = ?",
     [req.params.vendor_id],
     (err, rows) => {
       if (err) return res.status(400).json({ error: err.message });
       res.json(rows || []);
-    }
+    },
   );
 });
 
 // ===== PROJECT MILESTONES =====
-app.post('/api/milestones', (req, res) => {
-  const { project_id, title, description, due_date, payment_percentage } = req.body;
-  const id = uuidv4();
-  
+app.post("/api/milestones", (req, res) => {
+  const { project_id, title, description, due_date, payment_percentage } =
+    req.body;
+  const id = makeId();
+
   db.run(
-    'INSERT INTO milestones (id, project_id, title, description, due_date, status, payment_percentage) VALUES (?, ?, ?, ?, ?, ?, ?)',
-    [id, project_id, title, description, due_date, 'pending', payment_percentage],
+    "INSERT INTO milestones (id, project_id, title, description, due_date, status, payment_percentage) VALUES (?, ?, ?, ?, ?, ?, ?)",
+    [
+      id,
+      project_id,
+      title,
+      description,
+      due_date,
+      "pending",
+      payment_percentage,
+    ],
     (err) => {
       if (err) return res.status(400).json({ error: err.message });
       res.json({ id });
-    }
+    },
   );
 });
 
-app.get('/api/milestones/:project_id', (req, res) => {
+app.get("/api/milestones/:project_id", (req, res) => {
   db.all(
-    'SELECT * FROM milestones WHERE project_id = ? ORDER BY due_date ASC',
+    "SELECT * FROM milestones WHERE project_id = ? ORDER BY due_date ASC",
     [req.params.project_id],
     (err, rows) => {
       if (err) return res.status(400).json({ error: err.message });
       res.json(rows || []);
-    }
+    },
   );
 });
 
-app.put('/api/milestones/:id', (req, res) => {
+app.put("/api/milestones/:id", (req, res) => {
   const { status } = req.body;
   db.run(
-    'UPDATE milestones SET status = ? WHERE id = ?',
+    "UPDATE milestones SET status = ? WHERE id = ?",
     [status, req.params.id],
     (err) => {
       if (err) return res.status(400).json({ error: err.message });
       res.json({ success: true });
-    }
+    },
   );
 });
 
 // ===== CONTRACTS =====
-app.post('/api/contracts', (req, res) => {
+app.post("/api/contracts", (req, res) => {
   const { project_id, vendor_id, contractor_id, contract_text } = req.body;
-  const id = uuidv4();
-  
+  const id = makeId();
+
   db.run(
-    'INSERT INTO contracts (id, project_id, vendor_id, contractor_id, contract_text, status) VALUES (?, ?, ?, ?, ?, ?)',
-    [id, project_id, vendor_id, contractor_id, contract_text, 'pending'],
+    "INSERT INTO contracts (id, project_id, vendor_id, contractor_id, contract_text, status) VALUES (?, ?, ?, ?, ?, ?)",
+    [id, project_id, vendor_id, contractor_id, contract_text, "pending"],
     (err) => {
       if (err) return res.status(400).json({ error: err.message });
       res.json({ id });
-    }
+    },
   );
 });
 
-app.get('/api/contracts/:project_id', (req, res) => {
+app.get("/api/contracts/:project_id", (req, res) => {
   db.all(
-    'SELECT * FROM contracts WHERE project_id = ?',
+    "SELECT * FROM contracts WHERE project_id = ?",
     [req.params.project_id],
     (err, rows) => {
       if (err) return res.status(400).json({ error: err.message });
       res.json(rows || []);
-    }
+    },
   );
 });
 
-app.put('/api/contracts/:id', (req, res) => {
+app.put("/api/contracts/:id", (req, res) => {
   const { status } = req.body;
   db.run(
-    'UPDATE contracts SET status = ?, signed_date = ? WHERE id = ?',
-    [status, status === 'signed' ? new Date().toISOString() : null, req.params.id],
+    "UPDATE contracts SET status = ?, signed_date = ? WHERE id = ?",
+    [
+      status,
+      status === "signed" ? new Date().toISOString() : null,
+      req.params.id,
+    ],
     (err) => {
       if (err) return res.status(400).json({ error: err.message });
       res.json({ success: true });
-    }
+    },
   );
 });
 
 // ===== PAYMENTS =====
-app.post('/api/payments', (req, res) => {
-  const { project_id, vendor_id, amount, payment_method, milestone_id } = req.body;
-  const id = uuidv4();
-  
+app.post("/api/payments", (req, res) => {
+  const { project_id, vendor_id, amount, payment_method, milestone_id } =
+    req.body;
+  const id = makeId();
+
   db.run(
-    'INSERT INTO payments (id, project_id, vendor_id, amount, status, payment_method, milestone_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
-    [id, project_id, vendor_id, amount, 'pending', payment_method, milestone_id],
+    "INSERT INTO payments (id, project_id, vendor_id, amount, status, payment_method, milestone_id) VALUES (?, ?, ?, ?, ?, ?, ?)",
+    [
+      id,
+      project_id,
+      vendor_id,
+      amount,
+      "pending",
+      payment_method,
+      milestone_id,
+    ],
     (err) => {
       if (err) return res.status(400).json({ error: err.message });
       res.json({ id });
-    }
+    },
   );
 });
 
-app.get('/api/payments/:project_id', (req, res) => {
+app.get("/api/payments/:project_id", (req, res) => {
   db.all(
-    'SELECT * FROM payments WHERE project_id = ? ORDER BY created_at DESC',
+    "SELECT * FROM payments WHERE project_id = ? ORDER BY created_at DESC",
     [req.params.project_id],
     (err, rows) => {
       if (err) return res.status(400).json({ error: err.message });
       res.json(rows || []);
-    }
+    },
   );
 });
 
-app.put('/api/payments/:id', (req, res) => {
+app.put("/api/payments/:id", (req, res) => {
   const { status } = req.body;
   db.run(
-    'UPDATE payments SET status = ? WHERE id = ?',
+    "UPDATE payments SET status = ? WHERE id = ?",
     [status, req.params.id],
     (err) => {
       if (err) return res.status(400).json({ error: err.message });
       res.json({ success: true });
-    }
+    },
   );
 });
 
 // ===== ADVANCED SEARCH =====
-app.get('/api/projects/search', (req, res) => {
-  const { category, location, budget_min, budget_max, experience_level, skills } = req.query;
-  
-  let query = 'SELECT p.*, pd.experience_level, pd.skills_required FROM projects p LEFT JOIN project_details pd ON p.id = pd.project_id WHERE p.status = "open"';
+app.get("/api/projects/search", (req, res) => {
+  const {
+    category,
+    location,
+    budget_min,
+    budget_max,
+    experience_level,
+    skills,
+  } = req.query;
+
+  let query =
+    'SELECT p.*, pd.experience_level, pd.skills_required FROM projects p LEFT JOIN project_details pd ON p.id = pd.project_id WHERE p.status = "open"';
   const params = [];
-  
+
   if (category) {
-    query += ' AND p.category LIKE ?';
+    query += " AND p.category LIKE ?";
     params.push(`%${category}%`);
   }
   if (location) {
-    query += ' AND p.location LIKE ?';
+    query += " AND p.location LIKE ?";
     params.push(`%${location}%`);
   }
   if (budget_min) {
-    query += ' AND CAST(p.budget AS REAL) >= ?';
+    query += " AND CAST(p.budget AS REAL) >= ?";
     params.push(budget_min);
   }
   if (budget_max) {
-    query += ' AND CAST(p.budget AS REAL) <= ?';
+    query += " AND CAST(p.budget AS REAL) <= ?";
     params.push(budget_max);
   }
   if (experience_level) {
-    query += ' AND pd.experience_level LIKE ?';
+    query += " AND pd.experience_level LIKE ?";
     params.push(`%${experience_level}%`);
   }
-  
-  query += ' ORDER BY p.created_at DESC';
-  
+
+  query += " ORDER BY p.created_at DESC";
+
   db.all(query, params, (err, rows) => {
     if (err) return res.status(400).json({ error: err.message });
     res.json(rows || []);
@@ -650,23 +749,24 @@ app.get('/api/projects/search', (req, res) => {
 });
 
 // Search vendors
-app.get('/api/vendors/search', (req, res) => {
+app.get("/api/vendors/search", (req, res) => {
   const { category, location } = req.query;
 
-  let query = 'SELECT u.*, vp.* FROM users u JOIN vendor_profiles vp ON u.id = vp.user_id WHERE u.type = "vendor" AND vp.verified = 1';
+  let query =
+    'SELECT u.*, vp.* FROM users u JOIN vendor_profiles vp ON u.id = vp.user_id WHERE u.type = "vendor" AND vp.verified = 1';
   const params = [];
 
   if (category) {
-    query += ' AND vp.services LIKE ?';
+    query += " AND vp.services LIKE ?";
     params.push(`%${category}%`);
   }
 
   if (location) {
-    query += ' AND u.location LIKE ?';
+    query += " AND u.location LIKE ?";
     params.push(`%${location}%`);
   }
 
-  query += ' ORDER BY vp.rating DESC';
+  query += " ORDER BY vp.rating DESC";
 
   db.all(query, params, (err, rows) => {
     if (err) {
