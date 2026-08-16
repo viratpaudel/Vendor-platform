@@ -344,3 +344,96 @@ app.get('/api/vendors/search', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
+// Add after the existing reviews table:
+
+// Projects extended table
+db.run(`CREATE TABLE IF NOT EXISTS project_details (
+  id TEXT PRIMARY KEY,
+  project_id TEXT,
+  experience_level TEXT,
+  skills_required TEXT,
+  attachments TEXT,
+  project_scope TEXT,
+  payment_method TEXT,
+  contract_type TEXT,
+  FOREIGN KEY(project_id) REFERENCES projects(id)
+)`);
+
+// Vendor portfolios
+db.run(`CREATE TABLE IF NOT EXISTS vendor_portfolio (
+  id TEXT PRIMARY KEY,
+  vendor_id TEXT,
+  title TEXT,
+  description TEXT,
+  image_url TEXT,
+  project_url TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(vendor_id) REFERENCES users(id)
+)`);
+
+// Vendor certifications
+db.run(`CREATE TABLE IF NOT EXISTS vendor_certifications (
+  id TEXT PRIMARY KEY,
+  vendor_id TEXT,
+  certification_name TEXT,
+  issuer TEXT,
+  issue_date TEXT,
+  expiry_date TEXT,
+  credential_url TEXT,
+  FOREIGN KEY(vendor_id) REFERENCES users(id)
+)`);
+
+// Vendor testimonials
+db.run(`CREATE TABLE IF NOT EXISTS testimonials (
+  id TEXT PRIMARY KEY,
+  vendor_id TEXT,
+  client_name TEXT,
+  company TEXT,
+  testimonial_text TEXT,
+  rating REAL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(vendor_id) REFERENCES users(id)
+)`);
+
+// Project milestones
+db.run(`CREATE TABLE IF NOT EXISTS milestones (
+  id TEXT PRIMARY KEY,
+  project_id TEXT,
+  title TEXT,
+  description TEXT,
+  due_date TEXT,
+  status TEXT,
+  payment_percentage REAL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(project_id) REFERENCES projects(id)
+)`);
+
+// Contracts
+db.run(`CREATE TABLE IF NOT EXISTS contracts (
+  id TEXT PRIMARY KEY,
+  project_id TEXT,
+  vendor_id TEXT,
+  contractor_id TEXT,
+  contract_text TEXT,
+  status TEXT,
+  signed_date TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(project_id) REFERENCES projects(id),
+  FOREIGN KEY(vendor_id) REFERENCES users(id),
+  FOREIGN KEY(contractor_id) REFERENCES users(id)
+)`);
+
+// Payments
+db.run(`CREATE TABLE IF NOT EXISTS payments (
+  id TEXT PRIMARY KEY,
+  project_id TEXT,
+  vendor_id TEXT,
+  amount REAL,
+  status TEXT,
+  payment_method TEXT,
+  milestone_id TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(project_id) REFERENCES projects(id),
+  FOREIGN KEY(vendor_id) REFERENCES users(id),
+  FOREIGN KEY(milestone_id) REFERENCES milestones(id)
+)`);
