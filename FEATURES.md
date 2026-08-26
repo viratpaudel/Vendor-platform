@@ -149,4 +149,4 @@
 - 📱 Touch-friendly buttons
 - 🔍 Readable fonts
 Last updated: August 2026
-by virat paudel
+- by virat paudel
