@@ -69,4 +69,4 @@ Right now it handles the basics really well. Eventually:
 - Smart matching (suggest projects to contractors they're actually good at
 ---
 
-Made with actual frustration and determination to solve a real problem.
+Made with actual frustration and determination to solve a real problem tested by 20+ people
