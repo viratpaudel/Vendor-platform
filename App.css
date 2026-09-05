@@ -943,7 +943,10 @@ body {
     font-size: 22px;
   }
 
-  .nav-buttons {
+  .nav-buttonsbutton:focus-visible {
+  outline: 2px solid #4a90e2;
+  outline-offset: 3px;
+} {
     display: flex;
     width: 100%;
     flex-wrap: wrap;
