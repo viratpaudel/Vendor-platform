@@ -1,37 +1,37 @@
-import React, { useState, useEffect } from 'react';
-import './App.css';
+import React, { useState, useEffect } from "react";
+import "./App.css";
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = "http://localhost:5000/api";
 
 export default function VendorPlatform() {
   const [currentUser, setCurrentUser] = useState(null);
-  const [page, setPage] = useState('login');
+  const [page, setPage] = useState("login");
   const [projects, setProjects] = useState([]);
   const [vendors, setVendors] = useState([]);
 
   // Auth
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
-  const [userType, setUserType] = useState('vendor');
-  const [location, setLocation] = useState('');
-  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [userType, setUserType] = useState("vendor");
+  const [location, setLocation] = useState("");
+  const [phone, setPhone] = useState("");
 
   // Forms
-  const [projectTitle, setProjectTitle] = useState('');
-  const [projectDesc, setProjectDesc] = useState('');
-  const [projectCategory, setProjectCategory] = useState('');
-  const [projectBudget, setProjectBudget] = useState('');
-  const [projectLocation, setProjectLocation] = useState('');
-  const [projectDeadline, setProjectDeadline] = useState('');
+  const [projectTitle, setProjectTitle] = useState("");
+  const [projectDesc, setProjectDesc] = useState("");
+  const [projectCategory, setProjectCategory] = useState("");
+  const [projectBudget, setProjectBudget] = useState("");
+  const [projectLocation, setProjectLocation] = useState("");
+  const [projectDeadline, setProjectDeadline] = useState("");
 
   const [selectedProject, setSelectedProject] = useState(null);
   const [quotations, setQuotations] = useState([]);
-  const [quotationAmount, setQuotationAmount] = useState('');
-  const [quotationDesc, setQuotationDesc] = useState('');
+  const [quotationAmount, setQuotationAmount] = useState("");
+  const [quotationDesc, setQuotationDesc] = useState("");
 
   const [messages, setMessages] = useState([]);
-  const [messageText, setMessageText] = useState('');
+  const [messageText, setMessageText] = useState("");
   const [selectedVendor, setSelectedVendor] = useState(null);
 
   // Register
@@ -39,17 +39,24 @@ export default function VendorPlatform() {
     e.preventDefault();
     try {
       const res = await fetch(`${API_URL}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, name, type: userType, location, phone })
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          password,
+          name,
+          type: userType,
+          location,
+          phone,
+        }),
       });
       const data = await res.json();
       if (res.ok) {
         setCurrentUser(data);
-        setPage(userType === 'vendor' ? 'vendor-profile' : 'post-project');
+        setPage(userType === "vendor" ? "vendor-profile" : "post-project");
       }
     } catch (err) {
-      alert('Registration failed');
+      alert("Registration failed");
     }
   };
 
@@ -58,19 +65,21 @@ export default function VendorPlatform() {
     e.preventDefault();
     try {
       const res = await fetch(`${API_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
       });
       const data = await res.json();
       if (res.ok) {
         setCurrentUser(data);
-        setPage(data.type === 'vendor' ? 'vendor-dashboard' : 'contractor-dashboard');
+        setPage(
+          data.type === "vendor" ? "vendor-dashboard" : "contractor-dashboard",
+        );
       } else {
-        alert('Login failed');
+        alert("Login failed");
       }
     } catch (err) {
-      alert('Login error');
+      alert("Login error");
     }
   };
 
@@ -79,8 +88,8 @@ export default function VendorPlatform() {
     e.preventDefault();
     try {
       const res = await fetch(`${API_URL}/projects`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           contractor_id: currentUser.id,
           title: projectTitle,
@@ -89,20 +98,20 @@ export default function VendorPlatform() {
           budget: projectBudget,
           location: projectLocation,
           deadline: projectDeadline,
-          required_skills: projectCategory
-        })
+          required_skills: projectCategory,
+        }),
       });
       if (res.ok) {
-        alert('Project posted!');
-        setProjectTitle('');
-        setProjectDesc('');
-        setProjectCategory('');
-        setProjectBudget('');
+        alert("Project posted!");
+        setProjectTitle("");
+        setProjectDesc("");
+        setProjectCategory("");
+        setProjectBudget("");
         loadProjects();
-        setPage('contractor-dashboard');
+        setPage("contractor-dashboard");
       }
     } catch (err) {
-      alert('Failed to post project');
+      alert("Failed to post project");
     }
   };
 
@@ -113,7 +122,7 @@ export default function VendorPlatform() {
       const data = await res.json();
       setProjects(data || []);
     } catch (err) {
-      console.log('Error loading projects');
+      console.log("Error loading projects");
     }
   };
 
@@ -124,7 +133,7 @@ export default function VendorPlatform() {
       const data = await res.json();
       setQuotations(data || []);
     } catch (err) {
-      console.log('Error loading quotations');
+      console.log("Error loading quotations");
     }
   };
 
@@ -133,23 +142,23 @@ export default function VendorPlatform() {
     e.preventDefault();
     try {
       const res = await fetch(`${API_URL}/quotations`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           project_id: selectedProject.id,
           vendor_id: currentUser.id,
           amount: quotationAmount,
-          description: quotationDesc
-        })
+          description: quotationDesc,
+        }),
       });
       if (res.ok) {
-        alert('Quotation submitted!');
-        setQuotationAmount('');
-        setQuotationDesc('');
+        alert("Quotation submitted!");
+        setQuotationAmount("");
+        setQuotationDesc("");
         loadQuotations(selectedProject.id);
       }
     } catch (err) {
-      alert('Failed to submit quotation');
+      alert("Failed to submit quotation");
     }
   };
 
@@ -158,21 +167,21 @@ export default function VendorPlatform() {
     e.preventDefault();
     try {
       const res = await fetch(`${API_URL}/messages`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           sender_id: currentUser.id,
           recipient_id: selectedVendor.id,
           project_id: selectedProject.id,
-          message: messageText
-        })
+          message: messageText,
+        }),
       });
       if (res.ok) {
-        setMessageText('');
+        setMessageText("");
         loadMessages();
       }
     } catch (err) {
-      alert('Failed to send message');
+      alert("Failed to send message");
     }
   };
 
@@ -180,34 +189,44 @@ export default function VendorPlatform() {
   const loadMessages = async () => {
     if (!selectedProject || !selectedVendor) return;
     try {
-      const res = await fetch(`${API_URL}/messages/${selectedProject.id}/${currentUser.id}`);
+      const res = await fetch(
+        `${API_URL}/messages/${selectedProject.id}/${currentUser.id}`,
+      );
       const data = await res.json();
       setMessages(data || []);
     } catch (err) {
-      console.log('Error loading messages');
+      console.log("Error loading messages");
     }
   };
 
   // Search vendors
   const handleSearchVendors = async (category, loc) => {
     try {
-      const res = await fetch(`${API_URL}/vendors/search?category=${category}&location=${loc}`);
+      const res = await fetch(
+        `${API_URL}/vendors/search?category=${category}&location=${loc}`,
+      );
       const data = await res.json();
       setVendors(data || []);
     } catch (err) {
-      console.log('Error searching vendors');
+      console.log("Error searching vendors");
     }
   };
 
   useEffect(() => {
-    if (currentUser && (page === 'contractor-dashboard' || page === 'browse-vendors')) {
+    if (
+      currentUser &&
+      (page === "contractor-dashboard" ||
+        page === "browse-vendors" ||
+        page === "browse-projects" ||
+        page === "my-projects")
+    ) {
       loadProjects();
     }
   }, [page, currentUser]);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (selectedProject && selectedVendor && page === 'chat') {
+      if (selectedProject && selectedVendor && page === "chat") {
         loadMessages();
       }
     }, 2000);
@@ -219,11 +238,41 @@ export default function VendorPlatform() {
   if (!currentUser) {
     return (
       <div className="auth-container">
-        <div className="auth-box">
-          <h1>🏗️ Vendor Platform</h1>
-          {page === 'login' ? (
+        <div className="auth-shell">
+          <section className="auth-hero">
+            <div className="brand-mark">VP</div>
+            <p className="auth-kicker">Build better, together</p>
+            <h1>Find the right people for the work that matters.</h1>
+            <p className="auth-intro">
+              A focused marketplace for trusted vendors and ambitious project
+              owners. Post a brief, compare proposals, and keep every detail in
+              one place.
+            </p>
+            <div className="auth-stats">
+              <div>
+                <strong>01</strong>
+                <span>Post a project</span>
+              </div>
+              <div>
+                <strong>02</strong>
+                <span>Meet your match</span>
+              </div>
+              <div>
+                <strong>03</strong>
+                <span>Make it happen</span>
+              </div>
+            </div>
+            <div className="auth-note">
+              <span className="status-dot" />
+              Clear proposals. Direct conversations. Better outcomes.
+            </div>
+          </section>
+
+          <div className="auth-box">
+            <p className="form-eyebrow">Welcome back</p>
+            <h2>{page === "login" ? "Sign in to your workspace" : "Create your workspace"}</h2>
+          {page === "login" ? (
             <form onSubmit={handleLogin}>
-              <h2>Login</h2>
               <input
                 type="email"
                 placeholder="Email"
@@ -240,15 +289,14 @@ export default function VendorPlatform() {
               />
               <button type="submit">Login</button>
               <p>
-                Don't have an account?{' '}
-                <a href="#" onClick={() => setPage('register')}>
+                Don't have an account?{" "}
+                <a href="#" onClick={(e) => { e.preventDefault(); setPage("register"); }}>
                   Register
                 </a>
               </p>
             </form>
           ) : (
             <form onSubmit={handleRegister}>
-              <h2>Register</h2>
               <input
                 type="text"
                 placeholder="Full Name"
@@ -284,46 +332,65 @@ export default function VendorPlatform() {
                 onChange={(e) => setLocation(e.target.value)}
                 required
               />
-              <select value={userType} onChange={(e) => setUserType(e.target.value)}>
+              <select
+                value={userType}
+                onChange={(e) => setUserType(e.target.value)}
+              >
                 <option value="vendor">Vendor/Contractor</option>
                 <option value="contractor">Project Poster</option>
               </select>
               <button type="submit">Register</button>
               <p>
-                Already have an account?{' '}
-                <a href="#" onClick={() => setPage('login')}>
+                Already have an account?{" "}
+                <a href="#" onClick={(e) => { e.preventDefault(); setPage("login"); }}>
                   Login
                 </a>
               </p>
             </form>
           )}
+          </div>
         </div>
       </div>
     );
   }
 
   // Vendor Dashboard
-  if (page === 'vendor-dashboard' || page === 'vendor-profile') {
+  if (page === "vendor-dashboard" || page === "vendor-profile") {
     return (
       <div className="dashboard">
         <header className="navbar">
           <h1>Vendor Platform</h1>
           <div className="nav-buttons">
-            <button onClick={() => setPage('browse-projects')}>Browse Projects</button>
-            <button onClick={() => { setCurrentUser(null); setPage('login'); }}>Logout</button>
+            <button onClick={() => setPage("browse-projects")}>
+              Browse Projects
+            </button>
+            <button
+              onClick={() => {
+                setCurrentUser(null);
+                setPage("login");
+              }}
+            >
+              Logout
+            </button>
           </div>
         </header>
 
         <div className="container">
-          {page === 'vendor-profile' ? (
+          {page === "vendor-profile" ? (
             <div className="card">
               <h2>Complete Your Profile</h2>
               <form>
-                <input type="text" placeholder="Services (e.g., Electrical, Plumbing)" />
+                <input
+                  type="text"
+                  placeholder="Services (e.g., Electrical, Plumbing)"
+                />
                 <input type="text" placeholder="Years of Experience" />
                 <textarea placeholder="Portfolio/Previous Work"></textarea>
                 <input type="text" placeholder="Pricing" />
-                <button type="button" onClick={() => setPage('vendor-dashboard')}>
+                <button
+                  type="button"
+                  onClick={() => setPage("vendor-dashboard")}
+                >
                   Save & Continue
                 </button>
               </form>
@@ -333,7 +400,9 @@ export default function VendorPlatform() {
               <div className="card">
                 <h2>Welcome, {currentUser.name}!</h2>
                 <p>Your vendor dashboard</p>
-                <p>Browse projects and submit quotations to grow your business.</p>
+                <p>
+                  Browse projects and submit quotations to grow your business.
+                </p>
               </div>
             </>
           )}
@@ -343,14 +412,23 @@ export default function VendorPlatform() {
   }
 
   // Browse Projects
-  if (page === 'browse-projects') {
+  if (page === "browse-projects") {
     return (
       <div className="dashboard">
         <header className="navbar">
           <h1>Available Projects</h1>
           <div className="nav-buttons">
-            <button onClick={() => setPage('vendor-dashboard')}>Dashboard</button>
-            <button onClick={() => { setCurrentUser(null); setPage('login'); }}>Logout</button>
+            <button onClick={() => setPage("vendor-dashboard")}>
+              Dashboard
+            </button>
+            <button
+              onClick={() => {
+                setCurrentUser(null);
+                setPage("login");
+              }}
+            >
+              Logout
+            </button>
           </div>
         </header>
 
@@ -358,18 +436,31 @@ export default function VendorPlatform() {
           <div className="projects-grid">
             {projects.map((p) => (
               <div key={p.id} className="card project-card">
+                <div className="project-image-placeholder">
+                  {p.category === "Plumbing" && "🔧"}
+                  {p.category === "Electrical" && "⚡"}
+                  {p.category === "Construction" && "🏗️"}
+                  {p.category === "Carpentry" && "🪵"}
+                  {p.category === "Painting" && "🎨"}
+                  {p.category === "Web Development" && "💻"}
+                  {p.category === "App Development" && "📱"}
+                  {p.category === "Design" && "🎭"}
+                </div>
                 <h3>{p.title}</h3>
-                <p>{p.description}</p>
+                <p className="project-description">
+                  {p.description.substring(0, 120)}...
+                </p>
                 <div className="project-details">
-                  <span>💰 ₹{p.budget}</span>
+                  <span>💰 {p.budget}</span>
                   <span>📍 {p.location}</span>
-                  <span>📅 {p.deadline}</span>
+                  <span>📅 {new Date(p.deadline).toLocaleDateString()}</span>
+                  <span>🏷️ {p.category}</span>
                 </div>
                 <button
                   onClick={() => {
                     setSelectedProject(p);
                     loadQuotations(p.id);
-                    setPage('submit-quotation');
+                    setPage("submit-quotation");
                   }}
                 >
                   View & Submit Quote
@@ -383,21 +474,29 @@ export default function VendorPlatform() {
   }
 
   // Submit Quotation
-  if (page === 'submit-quotation' && selectedProject) {
+  if (page === "submit-quotation" && selectedProject) {
     return (
       <div className="dashboard">
         <header className="navbar">
           <h1>Project: {selectedProject.title}</h1>
-          <button onClick={() => setPage('browse-projects')}>← Back</button>
+          <button onClick={() => setPage("browse-projects")}>← Back</button>
         </header>
 
         <div className="container">
           <div className="card">
             <h3>Project Details</h3>
-            <p><strong>Description:</strong> {selectedProject.description}</p>
-            <p><strong>Budget:</strong> ₹{selectedProject.budget}</p>
-            <p><strong>Location:</strong> {selectedProject.location}</p>
-            <p><strong>Deadline:</strong> {selectedProject.deadline}</p>
+            <p>
+              <strong>Description:</strong> {selectedProject.description}
+            </p>
+            <p>
+              <strong>Budget:</strong> ₹{selectedProject.budget}
+            </p>
+            <p>
+              <strong>Location:</strong> {selectedProject.location}
+            </p>
+            <p>
+              <strong>Deadline:</strong> {selectedProject.deadline}
+            </p>
           </div>
 
           <div className="card">
@@ -424,8 +523,12 @@ export default function VendorPlatform() {
             <h3>Other Quotations ({quotations.length})</h3>
             {quotations.map((q) => (
               <div key={q.id} className="quotation-item">
-                <p><strong>{q.vendor_name}</strong> - ⭐ {q.rating || 'N/A'}</p>
-                <p>₹{q.amount} - {q.status}</p>
+                <p>
+                  <strong>{q.vendor_name}</strong> - ⭐ {q.rating || "N/A"}
+                </p>
+                <p>
+                  ₹{q.amount} - {q.status}
+                </p>
                 <p>{q.description}</p>
               </div>
             ))}
@@ -436,15 +539,24 @@ export default function VendorPlatform() {
   }
 
   // Contractor Dashboard
-  if (page === 'contractor-dashboard') {
+  if (page === "contractor-dashboard") {
     return (
       <div className="dashboard">
         <header className="navbar">
           <h1>Contractor Dashboard</h1>
           <div className="nav-buttons">
-            <button onClick={() => setPage('post-project')}>Post Project</button>
-            <button onClick={() => setPage('my-projects')}>My Projects</button>
-            <button onClick={() => { setCurrentUser(null); setPage('login'); }}>Logout</button>
+            <button onClick={() => setPage("post-project")}>
+              Post Project
+            </button>
+            <button onClick={() => setPage("my-projects")}>My Projects</button>
+            <button
+              onClick={() => {
+                setCurrentUser(null);
+                setPage("login");
+              }}
+            >
+              Logout
+            </button>
           </div>
         </header>
 
@@ -459,12 +571,14 @@ export default function VendorPlatform() {
   }
 
   // Post Project
-  if (page === 'post-project') {
+  if (page === "post-project") {
     return (
       <div className="dashboard">
         <header className="navbar">
           <h1>Post a New Project</h1>
-          <button onClick={() => setPage('contractor-dashboard')}>← Back</button>
+          <button onClick={() => setPage("contractor-dashboard")}>
+            ← Back
+          </button>
         </header>
 
         <div className="container">
@@ -527,15 +641,19 @@ export default function VendorPlatform() {
   }
 
   // My Projects
-  if (page === 'my-projects') {
-    const myProjects = projects.filter((p) => p.contractor_id === currentUser.id);
+  if (page === "my-projects") {
+    const myProjects = projects.filter(
+      (p) => p.contractor_id === currentUser.id,
+    );
     return (
       <div className="dashboard">
         <header className="navbar">
           <h1>My Projects</h1>
           <div className="nav-buttons">
-            <button onClick={() => setPage('post-project')}>Post New</button>
-            <button onClick={() => setPage('contractor-dashboard')}>← Back</button>
+            <button onClick={() => setPage("post-project")}>Post New</button>
+            <button onClick={() => setPage("contractor-dashboard")}>
+              ← Back
+            </button>
           </div>
         </header>
 
@@ -543,18 +661,30 @@ export default function VendorPlatform() {
           <div className="projects-grid">
             {myProjects.map((p) => (
               <div key={p.id} className="card project-card">
+                <div className="project-image-placeholder">
+                  {p.category === "Plumbing" && "🔧"}
+                  {p.category === "Electrical" && "⚡"}
+                  {p.category === "Construction" && "🏗️"}
+                  {p.category === "Carpentry" && "🪵"}
+                  {p.category === "Painting" && "🎨"}
+                  {p.category === "Web Development" && "💻"}
+                  {p.category === "App Development" && "📱"}
+                  {p.category === "Design" && "🎭"}
+                </div>
                 <h3>{p.title}</h3>
-                <p>{p.description.substring(0, 100)}...</p>
+                <p className="project-description">
+                  {p.description.substring(0, 100)}...
+                </p>
                 <div className="project-details">
-                  <span>💰 ₹{p.budget}</span>
+                  <span>💰 {p.budget}</span>
                   <span>📍 {p.location}</span>
-                  <span>📅 {p.deadline}</span>
+                  <span>📅 {new Date(p.deadline).toLocaleDateString()}</span>
                 </div>
                 <button
                   onClick={() => {
                     setSelectedProject(p);
                     loadQuotations(p.id);
-                    setPage('view-quotations');
+                    setPage("view-quotations");
                   }}
                 >
                   View Quotations
@@ -568,12 +698,12 @@ export default function VendorPlatform() {
   }
 
   // View Quotations
-  if (page === 'view-quotations' && selectedProject) {
+  if (page === "view-quotations" && selectedProject) {
     return (
       <div className="dashboard">
         <header className="navbar">
           <h1>Quotations for: {selectedProject.title}</h1>
-          <button onClick={() => setPage('my-projects')}>← Back</button>
+          <button onClick={() => setPage("my-projects")}>← Back</button>
         </header>
 
         <div className="container">
@@ -585,32 +715,54 @@ export default function VendorPlatform() {
             quotations.map((q) => (
               <div key={q.id} className="card quotation-item">
                 <h3>{q.vendor_name}</h3>
-                <p>⭐ Rating: {q.rating ? q.rating.toFixed(1) : 'New Vendor'}</p>
-                <p><strong>Amount:</strong> ₹{q.amount}</p>
-                <p><strong>Proposal:</strong> {q.description}</p>
-                <p><strong>Status:</strong> {q.status}</p>
+                <p>
+                  ⭐ Rating: {q.rating ? q.rating.toFixed(1) : "New Vendor"}
+                </p>
+                <p>
+                  <strong>Amount:</strong> ₹{q.amount}
+                </p>
+                <p>
+                  <strong>Proposal:</strong> {q.description}
+                </p>
+                <p>
+                  <strong>Status:</strong> {q.status}
+                </p>
                 <div className="quotation-actions">
-                  <button onClick={() => { setSelectedVendor({id: q.vendor_id, name: q.vendor_name}); setPage('chat'); }}>
+                  <button
+                    onClick={() => {
+                      setSelectedVendor({
+                        id: q.vendor_id,
+                        name: q.vendor_name,
+                      });
+                      setPage("chat");
+                    }}
+                  >
                     Chat with Vendor
                   </button>
-                  {q.status === 'pending' && (
+                  {q.status === "pending" && (
                     <>
-                      <button onClick={() => {
-                        fetch(`${API_URL}/quotations/${q.id}`, {
-                          method: 'PUT',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ status: 'accepted' })
-                        }).then(() => loadQuotations(selectedProject.id));
-                      }} className="accept-btn">
+                      <button
+                        onClick={() => {
+                          fetch(`${API_URL}/quotations/${q.id}`, {
+                            method: "PUT",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ status: "accepted" }),
+                          }).then(() => loadQuotations(selectedProject.id));
+                        }}
+                        className="accept-btn"
+                      >
                         Accept
                       </button>
-                      <button onClick={() => {
-                        fetch(`${API_URL}/quotations/${q.id}`, {
-                          method: 'PUT',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ status: 'rejected' })
-                        }).then(() => loadQuotations(selectedProject.id));
-                      }} className="reject-btn">
+                      <button
+                        onClick={() => {
+                          fetch(`${API_URL}/quotations/${q.id}`, {
+                            method: "PUT",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ status: "rejected" }),
+                          }).then(() => loadQuotations(selectedProject.id));
+                        }}
+                        className="reject-btn"
+                      >
                         Reject
                       </button>
                     </>
@@ -625,19 +777,22 @@ export default function VendorPlatform() {
   }
 
   // Chat
-  if (page === 'chat' && selectedProject && selectedVendor) {
+  if (page === "chat" && selectedProject && selectedVendor) {
     return (
       <div className="dashboard">
         <header className="navbar">
           <h1>Chat with {selectedVendor.name}</h1>
-          <button onClick={() => setPage('view-quotations')}>← Back</button>
+          <button onClick={() => setPage("view-quotations")}>← Back</button>
         </header>
 
         <div className="container">
           <div className="card chat-container">
             <div className="messages">
               {messages.map((m) => (
-                <div key={m.id} className={`message ${m.sender_id === currentUser.id ? 'sent' : 'received'}`}>
+                <div
+                  key={m.id}
+                  className={`message ${m.sender_id === currentUser.id ? "sent" : "received"}`}
+                >
                   <p>{m.message}</p>
                   <small>{new Date(m.created_at).toLocaleTimeString()}</small>
                 </div>
