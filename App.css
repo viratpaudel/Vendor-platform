@@ -61,3 +61,41 @@
     width: 100%;
   }
 }
+
+/* Extra final polish layer */
+.auth-box input,
+.auth-box select,
+.card input,
+.card textarea,
+.card select,
+.message-form input {
+  border-color: rgba(255, 255, 255, 0.17);
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+}
+
+.auth-box button,
+.card button,
+.project-card button,
+.message-form button,
+.nav-buttons button,
+.quotation-actions button {
+  box-shadow:
+    0 8px 18px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255,255,255,0.16);
+}
+
+.card h2,
+.card h3,
+.project-card h3,
+.quotation-item h3,
+.auth-box h1,
+.navbar h1 {
+  text-shadow: 0 2px 18px rgba(255,255,255,0.06);
+}
+
+.projects-grid .project-card,
+.quotation-item,
+.chat-container {
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
