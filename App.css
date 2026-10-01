@@ -71,6 +71,17 @@
 .message-form input {
   border-color: rgba(255, 255, 255, 0.17);
   background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+  transition: all 0.2s ease;
+}
+
+.auth-box input:focus,
+.auth-box select:focus,
+.card input:focus,
+.card textarea:focus,
+.card select:focus,
+.message-form input:focus {
+  border-color: rgba(169, 212, 198, 0.5);
+  box-shadow: 0 0 12px rgba(169, 212, 198, 0.2);
 }
 
 .auth-box button,
@@ -83,6 +94,7 @@
     0 8px 18px rgba(0, 0, 0, 0.18),
     inset 0 1px 0 rgba(255,255,255,0.16);
   transition: all 0.2s ease;
+  cursor: pointer;
 }
 
 .auth-box button:hover,
@@ -97,6 +109,18 @@
     inset 0 1px 0 rgba(255,255,255,0.16);
 }
 
+.auth-box button:active,
+.card button:active,
+.project-card button:active,
+.message-form button:active,
+.nav-buttons button:active,
+.quotation-actions button:active {
+  transform: translateY(0);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255,255,255,0.16);
+}
+
 .card h2,
 .card h3,
 .project-card h3,
@@ -104,6 +128,7 @@
 .auth-box h1,
 .navbar h1 {
   text-shadow: 0 2px 18px rgba(255,255,255,0.06);
+  transition: color 0.2s ease;
 }
 
 .projects-grid .project-card,
@@ -111,4 +136,29 @@
 .chat-container {
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.projects-grid .project-card:hover,
+.quotation-item:hover,
+.chat-container:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 15px 35px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* Smooth transitions for links */
+a {
+  transition: color 0.2s ease;
+}
+
+/* Input placeholder styling */
+::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+  transition: color 0.2s ease;
+}
+
+input:focus::placeholder {
+  color: rgba(255, 255, 255, 0.2);
 }
