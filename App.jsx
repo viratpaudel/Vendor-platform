@@ -34,6 +34,27 @@ export default function VendorPlatform() {
   const [messageText, setMessageText] = useState("");
   const [selectedVendor, setSelectedVendor] = useState(null);
 
+  const clearAuthFields = () => {
+    setEmail("");
+    setPassword("");
+    setName("");
+    setPhone("");
+    setLocation("");
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    setPage("login");
+    setSelectedProject(null);
+    setSelectedVendor(null);
+    setMessages([]);
+    setQuotations([]);
+    setMessageText("");
+    setQuotationAmount("");
+    setQuotationDesc("");
+    clearAuthFields();
+  };
+
   // Register
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -53,6 +74,7 @@ export default function VendorPlatform() {
       const data = await res.json();
       if (res.ok) {
         setCurrentUser(data);
+        clearAuthFields();
         setPage(userType === "vendor" ? "vendor-profile" : "post-project");
       }
     } catch (err) {
@@ -72,6 +94,7 @@ export default function VendorPlatform() {
       const data = await res.json();
       if (res.ok) {
         setCurrentUser(data);
+        clearAuthFields();
         setPage(
           data.type === "vendor" ? "vendor-dashboard" : "contractor-dashboard",
         );
@@ -107,6 +130,8 @@ export default function VendorPlatform() {
         setProjectDesc("");
         setProjectCategory("");
         setProjectBudget("");
+        setProjectLocation("");
+        setProjectDeadline("");
         loadProjects();
         setPage("contractor-dashboard");
       }
@@ -364,14 +389,7 @@ export default function VendorPlatform() {
             <button onClick={() => setPage("browse-projects")}>
               Browse Projects
             </button>
-            <button
-              onClick={() => {
-                setCurrentUser(null);
-                setPage("login");
-              }}
-            >
-              Logout
-            </button>
+            <button onClick={handleLogout}>Logout</button>
           </div>
         </header>
 
@@ -421,14 +439,7 @@ export default function VendorPlatform() {
             <button onClick={() => setPage("vendor-dashboard")}>
               Dashboard
             </button>
-            <button
-              onClick={() => {
-                setCurrentUser(null);
-                setPage("login");
-              }}
-            >
-              Logout
-            </button>
+            <button onClick={handleLogout}>Logout</button>
           </div>
         </header>
 
@@ -549,14 +560,7 @@ export default function VendorPlatform() {
               Post Project
             </button>
             <button onClick={() => setPage("my-projects")}>My Projects</button>
-            <button
-              onClick={() => {
-                setCurrentUser(null);
-                setPage("login");
-              }}
-            >
-              Logout
-            </button>
+            <button onClick={handleLogout}>Logout</button>
           </div>
         </header>
 
