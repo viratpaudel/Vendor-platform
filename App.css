@@ -421,3 +421,108 @@ button:hover,
   }
 }
 
+/* Extra premium styling pass */
+body {
+  background-image:
+    radial-gradient(circle at top left, rgba(169, 212, 198, 0.14), transparent 30%),
+    radial-gradient(circle at bottom right, rgba(96, 144, 176, 0.18), transparent 30%),
+    linear-gradient(180deg, rgba(9, 14, 18, 0.97), rgba(15, 21, 29, 0.96));
+}
+
+.navbar,
+.sidebar,
+.card,
+.project-card,
+.quotation-item,
+.chat-container,
+.auth-box,
+.modal-content {
+  position: relative;
+  isolation: isolate;
+}
+
+.navbar::before,
+.sidebar::before,
+.card::before,
+.project-card::before,
+.quotation-item::before,
+.chat-container::before,
+.auth-box::before,
+.modal-content::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, rgba(255,255,255,0.04), transparent 45%, rgba(169,212,198,0.05));
+  z-index: -1;
+  pointer-events: none;
+}
+
+.auth-box,
+.card,
+.project-card,
+.quotation-item,
+.chat-container {
+  border-radius: 20px;
+}
+
+button,
+.nav-buttons button,
+.quotation-actions button {
+  border-radius: 12px;
+}
+
+.card h2,
+.card h3,
+.project-card h3,
+.quotation-item h3,
+.auth-box h1,
+.navbar h1,
+.sidebar h2,
+.sidebar h3 {
+  letter-spacing: 0.02em;
+}
+
+.input-shell,
+.form-group,
+.message-form,
+.chat-input-wrap {
+  position: relative;
+}
+
+.input-shell:focus-within,
+.form-group:focus-within,
+.message-form:focus-within,
+.chat-input-wrap:focus-within {
+  box-shadow: 0 0 0 1px rgba(169, 212, 198, 0.35), 0 0 22px rgba(169, 212, 198, 0.08);
+}
+
+.badge,
+.status-pill,
+.tag,
+.meta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.28rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(169, 212, 198, 0.08);
+  border: 1px solid rgba(169, 212, 198, 0.18);
+  color: rgba(228, 248, 245, 0.95);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 768px) {
+  .navbar h1::after {
+    width: 100%;
+  }
+
+  .auth-box,
+  .card,
+  .project-card,
+  .quotation-item,
+  .chat-container {
+    border-radius: 16px;
+  }
+}
