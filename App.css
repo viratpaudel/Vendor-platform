@@ -591,3 +591,14 @@ button,
 .quotation-actions button {
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
+
+/* Final micro spacing touch */
+.nav-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.nav-buttons button {
+  min-height: 42px;
+}
