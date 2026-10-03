@@ -526,3 +526,43 @@ button,
     border-radius: 16px;
   }
 }
+
+/* Additional polished tweaks */
+.app-shell::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at top, rgba(169, 212, 198, 0.12), transparent 28%);
+  pointer-events: none;
+  z-index: -2;
+}
+
+.main-content {
+  gap: 1.25rem;
+}
+
+.nav-buttons button.active,
+.nav-buttons button[aria-pressed="true"] {
+  background: linear-gradient(135deg, rgba(169, 212, 198, 0.22), rgba(169, 212, 198, 0.08));
+  border-color: rgba(169, 212, 198, 0.55);
+  box-shadow: 0 0 0 1px rgba(169, 212, 198, 0.18), 0 12px 22px rgba(169, 212, 198, 0.12);
+}
+
+.card > * + *,
+.project-card > * + *,
+.quotation-item > * + *,
+.chat-container > * + * {
+  margin-top: 0.9rem;
+}
+
+button:disabled:hover {
+  transform: none;
+  filter: none;
+}
+
+@media (max-width: 540px) {
+  .nav-buttons button {
+    letter-spacing: 0.05em;
+    font-size: 0.75rem;
+  }
+}
