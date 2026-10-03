@@ -602,3 +602,20 @@ button,
 .nav-buttons button {
   min-height: 42px;
 }
+
+/* Extra micro polish for links and panel hover finish */
+a:hover {
+  color: rgba(228, 248, 245, 0.98);
+  text-shadow: 0 0 12px rgba(169, 212, 198, 0.18);
+}
+
+.navbar,
+.sidebar,
+.card,
+.project-card,
+.quotation-item,
+.chat-container,
+.auth-box,
+.modal-content {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
