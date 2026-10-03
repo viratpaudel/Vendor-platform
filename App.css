@@ -338,3 +338,86 @@ button:disabled {
 .form-group:focus-within {
   transform: translateY(-1px);
 }
+
+/* Extra polish layer */
+:root {
+  --panel-border: rgba(255, 255, 255, 0.1);
+  --soft-accent: rgba(169, 212, 198, 0.85);
+  --soft-glow: rgba(169, 212, 198, 0.2);
+}
+
+.app-shell,
+.main-content,
+.dashboard-view,
+.auth-page,
+.sidebar,
+.modal-content {
+  position: relative;
+}
+
+.auth-box,
+.card,
+.project-card,
+.chat-container,
+.navbar,
+.quotation-item,
+.sidebar,
+.modal-content {
+  border: 1px solid var(--panel-border);
+}
+
+button,
+input,
+select,
+textarea,
+.nav-buttons button {
+  font: inherit;
+}
+
+.navbar,
+.chat-container,
+.card,
+.project-card,
+.quotation-item,
+.auth-box,
+.sidebar {
+  background: rgba(13, 19, 28, 0.42);
+}
+
+.card::before,
+.project-card::before,
+.quotation-item::before,
+.chat-container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(255,255,255,0.04), transparent 45%, rgba(169,212,198,0.04));
+  pointer-events: none;
+}
+
+.card,
+.project-card,
+.quotation-item,
+.chat-container,
+.auth-box,
+.sidebar,
+.navbar {
+  overflow: hidden;
+}
+
+button:hover,
+.nav-buttons button:hover,
+.quotation-actions button:hover {
+  filter: brightness(1.06);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
