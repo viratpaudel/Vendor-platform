@@ -578,3 +578,16 @@ button:disabled:hover {
     0 0 0 1px rgba(169, 212, 198, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
+
+/* Tiny final finesse */
+input,
+textarea,
+select {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+button,
+.nav-buttons button,
+.quotation-actions button {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
