@@ -601,6 +601,7 @@ button,
 
 .nav-buttons button {
   min-height: 42px;
+  position: relative;
 }
 
 /* Extra micro polish for links and panel hover finish */
@@ -624,4 +625,17 @@ a:hover {
 .nav-buttons button.active,
 .nav-buttons button[aria-pressed="true"] {
   text-shadow: 0 0 10px rgba(169, 212, 198, 0.18);
+}
+
+.nav-buttons button.active::after,
+.nav-buttons button[aria-pressed="true"]::after {
+  content: "";
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 6px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(169, 212, 198, 0.9), rgba(169, 212, 198, 0.35));
+  box-shadow: 0 0 10px rgba(169, 212, 198, 0.25);
 }
