@@ -639,3 +639,16 @@ a:hover {
   background: linear-gradient(90deg, rgba(169, 212, 198, 0.9), rgba(169, 212, 198, 0.35));
   box-shadow: 0 0 10px rgba(169, 212, 198, 0.25);
 }
+
+.nav-buttons button.active::before,
+.nav-buttons button[aria-pressed="true"]::before {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 6px;
+  height: 1px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(169, 212, 198, 0.8), transparent);
+  opacity: 0.9;
+}
