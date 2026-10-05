@@ -619,3 +619,9 @@ a:hover {
 .modal-content {
   transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
+
+/* Small UX touch */
+.nav-buttons button.active,
+.nav-buttons button[aria-pressed="true"] {
+  text-shadow: 0 0 10px rgba(169, 212, 198, 0.18);
+}
